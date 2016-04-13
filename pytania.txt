@@ -2,3 +2,5 @@ Parser?
 - wymagane (plik wejściowy, długość słowa, metoda)
 - opcjonalne (pomoc i plik wyjściowy)
 - czy coś przyjmuje wartości domyślne oprócz pliku wyjściowego? 
+- np. czy jak uruchomie bez required to czy wiadomosci o błędzie zmieniamy?
+- czy do standaryzowanych osobny -- czy nazwa metody ustawiona (?)
