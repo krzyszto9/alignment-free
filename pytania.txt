@@ -1,0 +1,4 @@
+Parser?
+- wymagane (plik wejściowy, długość słowa, metoda)
+- opcjonalne (pomoc i plik wyjściowy)
+- czy coś przyjmuje wartości domyślne oprócz pliku wyjściowego? 
