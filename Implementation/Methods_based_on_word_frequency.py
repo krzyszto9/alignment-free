@@ -8,7 +8,6 @@ import math
 '''
 seq_number - liczba "obrabianych sekwencji"
 occurences_list - lista zawierajaca slowniki dla kazdego wzorca, key - numer sekwencji, d[key] - liczba wystapien danego wzorca wsekwencji
-
 chodzi o to, ze w outpucie, szukamy lini zaczynajacych sie od liczby
 potem szukamy w jakich sekwencjach wystepuje dany wzorzec i nastepnie dodajemy zwiekszamy liczbe wystapien danego wzorca w slowniku - jeden slownik, jednen motyw 
 '''
@@ -157,4 +156,3 @@ frequencies_list = calculate_frequencies(seqs_number, occurences_list)
 print "Pearson product-moment correlation coefficient\n", pearson(seqs_number, frequencies_list).round(4)
 #Dywergencja Kullbacka-Leiblera
 print "Kullback–Leibler divergence\n", kullback_leibler(seqs_number, frequencies_list).round(4)
-
