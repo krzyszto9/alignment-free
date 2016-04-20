@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import numpy as np
 import math
+import time
 
 '''
 seq_number - liczba "obrabianych sekwencji"
@@ -122,11 +123,12 @@ def pearson(seqs_number, frequencies_list):
                  x+= value_x
                  y+= value_y
                  xy+= value_x*value_y
+             print l
              result = math.sqrt((l*x_2-x**2)*(l*y_2-y**2))
              matrix[i][j] = float(0) if result==0 else (l * xy - (x * y))/ math.sqrt((l*x_2-x**2)*(l*y_2-y**2))
     return matrix
 
-def kullback_leibler(seqs_number, occurences_list):
+def kullback_leibler(seqs_number, frequencies_list):
     matrix = np.zeros([seqs_number, seqs_number])
     for i in range(0,seqs_number):
         for j in range(0,seqs_number):
@@ -134,7 +136,7 @@ def kullback_leibler(seqs_number, occurences_list):
              for dicts in frequencies_list:
                  value_x = 0 if (i not in dicts) else dicts[i] 
                  value_y = 0 if (j not in dicts) else dicts[j]
-                 if value_x != 0 and value_y !=0: kl+= value_x *math.log(value_x/value_y,2)
+                 if (value_x >0 and value_y >0): kl+= value_x *math.log(value_x/value_y,2)
              matrix[i][j] = kl
     return matrix
 
@@ -145,14 +147,26 @@ occurences_list = teiresias_patterns()
 seqs_identifiers = identify_headers(arguments.input.name)
 #Dystans euklidesowy
 np.set_printoptions(suppress=True)
-print "Euclidean distance matrix\n", euclidean_distance(seqs_number, occurences_list).round(4)
+start_e=time.time()
+#print "Euclidean distance matrix\n", euclidean_distance(seqs_number, occurences_list).round(4)
+#end_e=time.time()
+#print "euklides", end_e-start_e
 #Cosinus kata pomiedzy sekwencjami
-print "Angle metrics\n", angle_cos_distance(seqs_number, occurences_list).round(4)
+#start_cos=time.time()
+#print "Angle metrics\n", angle_cos_distance(seqs_number, occurences_list).round(4)
+#end_cos=time.time()
+#start_evol=time.time()
 #dystans ewolucyjny
-print "Evolutionary distance\n", evolutionary_distance(seqs_number, occurences_list).round(4)
-
+#print "Evolutionary distance\n", evolutionary_distance(seqs_number, occurences_list).round(4)
+#end_evol=time.time()
 #wspolczynnik korelacji liniowej Pearsona
+#start_pearson=time.time()
 frequencies_list = calculate_frequencies(seqs_number, occurences_list)
 print "Pearson product-moment correlation coefficient\n", pearson(seqs_number, frequencies_list).round(4)
+#end_pearson=time.time()
+#print "euklides", end_e-start_e
+#print "cos", end_cos-start_cos
+#print "evol", end_evol-start_evol
+#print "pearson", end_pearson-start_pearson
 #Dywergencja Kullbacka-Leiblera
-print "Kullback–Leibler divergence\n", kullback_leibler(seqs_number, frequencies_list).round(4)
+#print "Kullback–Leibler divergence\n", kullback_leibler(seqs_number, occurences_list)
