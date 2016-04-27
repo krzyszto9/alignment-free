@@ -8,6 +8,7 @@ import os.path
 
 np.set_printoptions(threshold=np.nan) #potem do usuniecia - wyświetlanie całych macierzy
 np.seterr(divide='ignore',invalid='ignore')
+np.set_printoptions(suppress=True)
 
 def parse():
     parser = argparse.ArgumentParser(description = 'Methods based on word (oligomer) frequency', add_help=False)
@@ -16,8 +17,12 @@ def parse():
     required.add_argument('--lenght', '-l', help='word (oligomer) lenght', required=True, type=int)
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--help', '-h', action='help', help="show this help message and exit")
+    optional.add_argument('--maximum_lenght', '-ml', help="maximum lenght of word (oligomer) length, must be greater than -l/--lenght", type=int)
     try:
-        return parser.parse_args()
+        pars = parser.parse_args()
+        if(pars.maximum_lenght and pars.lenght>=pars.maximum_lenght):
+            parser.error( "maximum lenght of word (oligomer) length, must be greater than -l/--lenght")
+        return pars
     except IOError, msg:
         parser.error(str(msg))
 
@@ -41,7 +46,6 @@ def teiresias_patterns(seqs_number):
             for i in range(3, len(line),2):
                 l[int(line[i])]+=1.0
             occurences_list.append(l)
-    subprocess.Popen("rm output.txt", stdout=subprocess.PIPE, stderr=None, shell=True).wait()
     return np.vstack(occurences_list)
 
 def calculate_frequencies(seqs_number, occurences_list):
@@ -49,6 +53,27 @@ def calculate_frequencies(seqs_number, occurences_list):
     for i in range(0,seqs_number):
         frequences_list.append(occurences_list[:,i]/np.sum(occurences_list[:,i]))
     return np.vstack(frequences_list)
+
+def identify_headers(input_file):
+    list_of_ids=[]
+    for line in open(input_file):
+        if line.startswith('>'):
+            line = line.replace('>','').split()
+            list_of_ids.append(line[0])
+    return np.vstack(list_of_ids)
+
+def calculate_weights(seqs_number):
+    (seq,weight_list) = ("",[])
+    # co z B i Z?
+    d = {'A':0.082 ,'R':0.055,'N':0.04,'D':0.054,'C':0.013,'Q':0.039,'E':0.067,'G':0.07,'H':0.022,'I':0.059,'L':0.096,'K':0.058,'M':0.024,'F':0.038,'P':0.047,'S':0.065,'T':0.053,'W':0.01,'Y':0.029,'V':0.068}
+    for line in open('output.txt'):
+        if line[0].isdigit():
+            line = line.rstrip('\n').split()
+            weight = 1
+            for a in line[2]:
+                weight *= d[a]
+            weight_list.append(weight)
+    return np.vstack(weight_list)
 
 def euclidean_distance(seqs_number, occurences_list):
     matrix = np.zeros([seqs_number, seqs_number])
@@ -62,7 +87,7 @@ def stdeuclidean_distance(seqs_number, occurences_list):
     std = np.nanvar(occurences_list.T,axis=0,ddof=1)
     for i in range(0,seqs_number):
         for j in range(i,seqs_number):
-             matrix[i][j]= matrix[j][i] = np.sum(np.where(std!=0,((occurences_list[:,i] - occurences_list[:,j])**2/std),0))
+             matrix[i][j]= matrix[j][i] = np.sqrt(np.sum(np.where(std!=0,((occurences_list[:,i] - occurences_list[:,j])**2/std),0)))
     return matrix
 
 def angle_cos(i,j,occurences_list):
@@ -98,22 +123,57 @@ def pearson(seqs_number, frequencies_list):
              matrix[i][j] = matrix[j][i] = (np.corrcoef(m[:, np.apply_along_axis(np.count_nonzero, 0, m) >= 1])[0,1]).round(10) + 0.0
     return matrix
 
-arguments = parse()
-seqs_number = teiresias_run(arguments.lenght, arguments.input.name)
-occurences_list = teiresias_patterns(seqs_number)    #można zastanowic sie nad poprawa
-frequencies_list = (calculate_frequencies(seqs_number, occurences_list)).T #można zastanowic sie nad poprawa
-#Dystans euklidesowy    			DZIAŁA DOBRZE - wszystkie trzy
-euclidean_dist = euclidean_distance(seqs_number, occurences_list)
-print "Raw euclidean distance matrix\n", np.sqrt(euclidean_dist)
-print "Squared euclidean distance matrix\n", euclidean_dist
-print "Standarized euclidean distance matrix\n", np.sqrt(stdeuclidean_distance(seqs_number, occurences_list))
-#Cosinus kata pomiedzy sekwencjami 		DZIAŁA DOBRZE
-print "Angle metrics\n", angle_cos_distance(seqs_number, occurences_list)         
-#Dystans ewolucyjny 				DZIAŁA DOBRZE
-print "Evolutionary distance\n", evolutionary_distance(seqs_number, occurences_list) 
-#Dywergencja Kullbacka-Leiblera 		DZIAŁA DOBRZE
-print "Kullback–Leibler divergence\n", kullback_leibler(seqs_number, frequencies_list)
-#Wspolczynnik korelacji liniowej Pearsona
-print "Pearson product-moment correlation coefficient\n", pearson(seqs_number, frequencies_list)
-#Wspolczynnik korelacji liniowej Pearsona - przeskalowany i znormalizowany
-print "Pearson product-moment correlation coefficient - normalized and scaled\n", (pearson(seqs_number, frequencies_list) + 1)/2
+def stdeuclidean_distance_diffrest_resolutions(lenght,maximum_lenght,input_file,seqs_number):
+    matrix = np.zeros([seqs_number, seqs_number])
+    for l in range(lenght,maximum_lenght+1):
+        teiresias_run(l, input_file)
+        occurences_list = teiresias_patterns(seqs_number)
+        matrix+=stdeuclidean_distance(seqs_number, occurences_list)
+    return matrix
+
+def weighted_euclidean_distance(seqs_number, occurences_list,weights_list):
+    matrix = np.zeros([seqs_number, seqs_number])
+    for i in range(0,seqs_number):
+        for j in range(i,seqs_number):
+             matrix[i][j]= matrix [j][i] = np.sum(((occurences_list[:,i] - occurences_list[:,j])**2) * weights_list[:,0])
+    return matrix
+
+def weighted_euclidean_distance_diffrest_resolutions(lenght,maximum_lenght,input_file,seqs_number):
+    matrix = np.zeros([seqs_number, seqs_number])
+    for l in range(lenght,maximum_lenght+1):
+        teiresias_run(l, input_file)
+        occurences_list = teiresias_patterns(seqs_number)
+        weights_list = calculate_weights(seqs_number)
+        matrix+=weighted_euclidean_distance(seqs_number, occurences_list,weights_list)
+    return matrix
+
+def main():
+    arguments = parse()
+    seqs_number = teiresias_run(arguments.lenght, arguments.input.name)
+    occurences_list = teiresias_patterns(seqs_number)    #można zastanowic sie nad poprawa
+    weights_list = calculate_weights(seqs_number)        #można zastanowic sie nad poprawa
+    frequencies_list = (calculate_frequencies(seqs_number, occurences_list)).T #można zastanowic sie nad poprawa
+    seqs_identifiers = identify_headers(arguments.input.name)
+    #Dystans euklidesowy    			DZIAŁA DOBRZE - wszystkie trzy, weighted ?
+    euclidean_dist = euclidean_distance(seqs_number, occurences_list)
+    print "\nRaw euclidean distance\n", np.sqrt(euclidean_dist)
+    print "\nSquared euclidean distance\n", euclidean_dist
+    print "\nStandarized euclidean distance\n", stdeuclidean_distance(seqs_number, occurences_list)
+    print "\nWeighted euclidean distance\n", weighted_euclidean_distance(seqs_number, occurences_list,weights_list)
+    #Cosinus kata pomiedzy sekwencjami 		DZIAŁA DOBRZE
+    print "\nAngle metrics\n", angle_cos_distance(seqs_number, occurences_list)         
+    #Dystans ewolucyjny 			DZIAŁA DOBRZE
+    print "\nEvolutionary distance\n", evolutionary_distance(seqs_number, occurences_list) 
+    #Dywergencja Kullbacka-Leiblera 		DZIAŁA DOBRZE
+    print "\nKullback–Leibler divergence\n", kullback_leibler(seqs_number, frequencies_list)
+    #Wspolczynnik korelacji liniowej Pearsona   DZIAŁA DOBRZE
+    print "\nPearson product-moment correlation coefficient\n", pearson(seqs_number, frequencies_list)
+    #Wspolczynnik korelacji liniowej Pearsona - przeskalowany i znormalizowany	DZIAŁA DOBRZE
+    print "\nPearson product-moment correlation coefficient - normalized and scaled\n", (pearson(seqs_number, frequencies_list) + 1)/2
+    #Dla różnych dlugosci motywow
+    if arguments.maximum_lenght is not None:
+        print "\nStandarized euclidean distance from "+str(arguments.lenght)+" to "+str(arguments.maximum_lenght)+"-tuples\n",stdeuclidean_distance_diffrest_resolutions(arguments.lenght,arguments.maximum_lenght,arguments.input.name,seqs_number) #DZIAŁA DOBRZE
+        print "\nWeighted euclidean distance from "+str(arguments.lenght)+" to "+str(arguments.maximum_lenght)+"-tuples\n",weighted_euclidean_distance_diffrest_resolutions(arguments.lenght,arguments.maximum_lenght,arguments.input.name,seqs_number)
+
+if __name__ == '__main__':
+    main()
