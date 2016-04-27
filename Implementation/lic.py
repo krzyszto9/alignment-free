@@ -115,3 +115,5 @@ print "Evolutionary distance\n", evolutionary_distance(seqs_number, occurences_l
 print "Kullback–Leibler divergence\n", kullback_leibler(seqs_number, frequencies_list)
 #Wspolczynnik korelacji liniowej Pearsona
 print "Pearson product-moment correlation coefficient\n", pearson(seqs_number, frequencies_list)
+#Wspolczynnik korelacji liniowej Pearsona - przeskalowany i znormalizowany
+print "Pearson product-moment correlation coefficient - normalized and scaled\n", (pearson(seqs_number, frequencies_list) + 1)/2
