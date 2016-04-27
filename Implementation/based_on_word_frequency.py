@@ -90,6 +90,13 @@ def stdeuclidean_distance(seqs_number, occurences_list):
              matrix[i][j]= matrix[j][i] = np.sqrt(np.sum(np.where(std!=0,((occurences_list[:,i] - occurences_list[:,j])**2/std),0)))
     return matrix
 
+def weighted_euclidean_distance(seqs_number, occurences_list,weights_list):
+    matrix = np.zeros([seqs_number, seqs_number])
+    for i in range(0,seqs_number):
+        for j in range(i,seqs_number):
+             matrix[i][j]= matrix [j][i] = np.sum(((occurences_list[:,i] - occurences_list[:,j])**2) * weights_list[:,0])
+    return matrix
+
 def angle_cos(i,j,occurences_list):
     return np.sum(occurences_list[:,i] * occurences_list[:,j])/(np.sqrt(np.sum(occurences_list[:,i]**2)) * np.sqrt(np.sum(occurences_list[:,j]**2)))
 
@@ -131,13 +138,6 @@ def stdeuclidean_distance_diffrest_resolutions(lenght,maximum_lenght,input_file,
         matrix+=stdeuclidean_distance(seqs_number, occurences_list)
     return matrix
 
-def weighted_euclidean_distance(seqs_number, occurences_list,weights_list):
-    matrix = np.zeros([seqs_number, seqs_number])
-    for i in range(0,seqs_number):
-        for j in range(i,seqs_number):
-             matrix[i][j]= matrix [j][i] = np.sum(((occurences_list[:,i] - occurences_list[:,j])**2) * weights_list[:,0])
-    return matrix
-
 def weighted_euclidean_distance_diffrest_resolutions(lenght,maximum_lenght,input_file,seqs_number):
     matrix = np.zeros([seqs_number, seqs_number])
     for l in range(lenght,maximum_lenght+1):
@@ -154,26 +154,19 @@ def main():
     weights_list = calculate_weights(seqs_number)        #można zastanowic sie nad poprawa
     frequencies_list = (calculate_frequencies(seqs_number, occurences_list)).T #można zastanowic sie nad poprawa
     seqs_identifiers = identify_headers(arguments.input.name)
-    #Dystans euklidesowy    			DZIAŁA DOBRZE - wszystkie trzy, weighted ?
     euclidean_dist = euclidean_distance(seqs_number, occurences_list)
     print "\nRaw euclidean distance\n", np.sqrt(euclidean_dist)
     print "\nSquared euclidean distance\n", euclidean_dist
     print "\nStandarized euclidean distance\n", stdeuclidean_distance(seqs_number, occurences_list)
     print "\nWeighted euclidean distance\n", weighted_euclidean_distance(seqs_number, occurences_list,weights_list)
-    #Cosinus kata pomiedzy sekwencjami 		DZIAŁA DOBRZE
     print "\nAngle metrics\n", angle_cos_distance(seqs_number, occurences_list)         
-    #Dystans ewolucyjny 			DZIAŁA DOBRZE
     print "\nEvolutionary distance\n", evolutionary_distance(seqs_number, occurences_list) 
-    #Dywergencja Kullbacka-Leiblera 		DZIAŁA DOBRZE
     print "\nKullback–Leibler divergence\n", kullback_leibler(seqs_number, frequencies_list)
-    #Wspolczynnik korelacji liniowej Pearsona   DZIAŁA DOBRZE
     print "\nPearson product-moment correlation coefficient\n", pearson(seqs_number, frequencies_list)
-    #Wspolczynnik korelacji liniowej Pearsona - przeskalowany i znormalizowany	DZIAŁA DOBRZE
     print "\nPearson product-moment correlation coefficient - normalized and scaled\n", (pearson(seqs_number, frequencies_list) + 1)/2
-    #Dla różnych dlugosci motywow
     if arguments.maximum_lenght is not None:
-        print "\nStandarized euclidean distance from "+str(arguments.lenght)+" to "+str(arguments.maximum_lenght)+"-tuples\n",stdeuclidean_distance_diffrest_resolutions(arguments.lenght,arguments.maximum_lenght,arguments.input.name,seqs_number) #DZIAŁA DOBRZE
-        print "\nWeighted euclidean distance from "+str(arguments.lenght)+" to "+str(arguments.maximum_lenght)+"-tuples\n",weighted_euclidean_distance_diffrest_resolutions(arguments.lenght,arguments.maximum_lenght,arguments.input.name,seqs_number)
+        print "\nStandarized euclidean distance from "+str(arguments.lenght)+" to "+str(arguments.maximum_lenght)+"-tuples\n",stdeuclidean_distance_different_resolutions(arguments.lenght,arguments.maximum_lenght,arguments.input.name,seqs_number)
+        print "\nWeighted euclidean distance from "+str(arguments.lenght)+" to "+str(arguments.maximum_lenght)+"-tuples\n",weighted_euclidean_distance_different_resolutions(arguments.lenght,arguments.maximum_lenght,arguments.input.name,seqs_number)
 
 if __name__ == '__main__':
     main()
