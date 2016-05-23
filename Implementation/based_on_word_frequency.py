@@ -17,6 +17,7 @@ methods = 	(('euclidean',['eucliudean distance','occurrences_list']),
 		('r_seuclidean',['standardized eucliudean distance with different resolutions','occurrences_list']),
 		('weuclidean',['weighted eucliudean distance','occurrences_list']),
 		('r_weuclidean',['weighted eucliudean distance with different resolutions','occurrences_list']),
+                ('minkowski',['minkowski distance','occurrences_list']),
 		('lcc',['pearson product-moment correlation coefficient - normalized and scaled','frequencies_list',]),
 		('kl',['Kullback–Leibler divergence','frequencies_list']),
 		('cosine',['cosine distance','occurrences_list']),
@@ -36,6 +37,7 @@ def parse():
     required_by_methods = args.add_argument_group('Arguments required by some methods')
     required_by_methods.add_argument('--maximum_length', '-ml', help="maximum length of word (oligomer) length, must be greater than -l/--length. required by 'r_seuclidean' and 'r_weuclidean'", type=int)
     required_by_methods.add_argument('--type', '-t', choices = ['p','prot','n','nucl'], help="type of sequences. 'p' or 'prot' if protein sequence, 'n' or 'nucl' if nucleotide. required by 'weuclidean' and 'r_weuclidean",metavar="TYPE")
+    required_by_methods.add_argument('--minkowski', '-mi', type=int, help="exponent, required by 'minkowski'. default 2",default=2)
 
     optional = args.add_argument_group('Optional arguments')
     optional.add_argument('--calculations', '-c', choices = ['o','occurrences','f','frequencies'], help="type of list on which calculations are based. 'o' or 'occurrences' if occurrences list,'f' or 'frequencies' if frequencies list",metavar='CALCULATIONS')
@@ -131,7 +133,6 @@ def calculate_weights(type_, seqs_number,input_file,length):
         return weight_list
 
 def squaredeuclidean(list_,seqs_number):
-    list_ = np.array(list_)
     matrix = np.zeros([seqs_number, seqs_number])
     for i, j in itertools.permutations(range(0,seqs_number),2):
          matrix[i][j]= matrix [j][i] = np.sum((list_[:,i] - list_[:,j])**2)
@@ -168,6 +169,12 @@ def r_weuclidean(length,maximum_length,input_file,seqs_number,type_,string):
         if string.startswith('f'): list_ = calculate_frequencies(list_, seqs_number)
         weights_list = calculate_weights(type_, seqs_number,input_file,l)
         matrix+=weuclidean(list_,weights_list,seqs_number)
+    return matrix
+
+def minkowski(list_,seqs_number,exponent):
+    matrix = np.zeros([seqs_number, seqs_number])
+    for i, j in itertools.permutations(range(0,seqs_number),2):
+         matrix[i][j]= matrix [j][i] = (np.sum((np.absolute(list_[:,i] - list_[:,j]))**exponent))**(1.0/float(exponent))
     return matrix
 
 def lcc(list_, seqs_number):
@@ -211,7 +218,10 @@ def main():
     for name, value in arguments.method.items():
         nargs = len(inspect.getargspec(eval(name))[0])
         if nargs == 2: result = eval(name +'('+value[1]+','+str(seqs_number)+')')
-        elif nargs == 3: result = eval(name +'('+value[1]+',weights_list,'+str(seqs_number)+')')
+        elif nargs == 3: 
+            if name == 'minkowski':
+                result = eval(name +'('+value[1]+','+str(seqs_number)+','+str(arguments.minkowski)+')')
+            else: result = eval(name +'('+value[1]+',weights_list,'+str(seqs_number)+')')
         elif nargs == 5: result = eval(name +'('+str(arguments.length)+','+str(arguments.maximum_length)+',"'+str(arguments.file.name)+'",'+str(seqs_number)+',"'+value[1]+'")')
         else : result = eval(name +'('+str(arguments.length)+','+str(arguments.maximum_length)+',"'+str(arguments.file.name)+'",'+str(seqs_number)+',"'+str(arguments.type)+'","'+value[1]+'")')
         if not arguments.quiet: print '\n' + value[0] + '\n', result 
