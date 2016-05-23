@@ -37,7 +37,7 @@ def parse():
     required_by_methods = args.add_argument_group('Arguments required by some methods')
     required_by_methods.add_argument('--maximum_length', '-ml', help="maximum length of word (oligomer) length, must be greater than -l/--length. required by 'r_seuclidean' and 'r_weuclidean'", type=int)
     required_by_methods.add_argument('--type', '-t', choices = ['p','prot','n','nucl'], help="type of sequences. 'p' or 'prot' if protein sequence, 'n' or 'nucl' if nucleotide. required by 'weuclidean' and 'r_weuclidean",metavar="TYPE")
-    required_by_methods.add_argument('--minkowski', '-mi', type=int, help="exponent, required by 'minkowski'. default 2",default=2)
+    required_by_methods.add_argument('--exponent', '-e', type=int, help="exponent, required by 'minkowski'. default 2",default=2)
 
     optional = args.add_argument_group('Optional arguments')
     optional.add_argument('--calculations', '-c', choices = ['o','occurrences','f','frequencies'], help="type of list on which calculations are based. 'o' or 'occurrences' if occurrences list,'f' or 'frequencies' if frequencies list",metavar='CALCULATIONS')
