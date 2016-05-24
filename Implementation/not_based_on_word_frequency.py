@@ -43,7 +43,7 @@ def get_seqs_and_ids(input_file):
     del sequences_list[0]
     return sequences_list, ids_list
 
-def get_seqs(input_file):
+def get_sequences(input_file):
     return get_seqs_and_ids(input_file)[0]
 
 def ncd_zlib(seqs_list):

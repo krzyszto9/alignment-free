@@ -133,13 +133,15 @@ def calculate_weights(type_, seqs_number,input_file,length):
         return weight_list
 
 def squaredeuclidean(list_,seqs_number):
-    matrix = np.zeros([seqs_number, seqs_number])
+    return minkowski(list_,seqs_number,1)
+    
+'''matrix = np.zeros([seqs_number, seqs_number])
     for i, j in itertools.permutations(range(0,seqs_number),2):
          matrix[i][j]= matrix [j][i] = np.sum((list_[:,i] - list_[:,j])**2)
-    return matrix
+    return matrix'''
 
 def euclidean(list_,seqs_number):
-    return np.sqrt(squaredeuclidean(list_,seqs_number))
+    return minkowski(list_,seqs_number,2)
 
 def seuclidean(list_, seqs_number):
     matrix = np.zeros([seqs_number, seqs_number])
@@ -220,7 +222,7 @@ def main():
         if nargs == 2: result = eval(name +'('+value[1]+','+str(seqs_number)+')')
         elif nargs == 3: 
             if name == 'minkowski':
-                result = eval(name +'('+value[1]+','+str(seqs_number)+','+str(arguments.minkowski)+')')
+                result = eval(name +'('+value[1]+','+str(seqs_number)+','+str(arguments.exponent)+')')
             else: result = eval(name +'('+value[1]+',weights_list,'+str(seqs_number)+')')
         elif nargs == 5: result = eval(name +'('+str(arguments.length)+','+str(arguments.maximum_length)+',"'+str(arguments.file.name)+'",'+str(seqs_number)+',"'+value[1]+'")')
         else : result = eval(name +'('+str(arguments.length)+','+str(arguments.maximum_length)+',"'+str(arguments.file.name)+'",'+str(seqs_number)+',"'+str(arguments.type)+'","'+value[1]+'")')
