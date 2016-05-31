@@ -3,6 +3,8 @@ import argparse
 import numpy as np
 import zlib
 import os.path
+import re
+import itertools
 from collections import OrderedDict
 
 methods = 	(('ncd_zlib','normalized compression distance using zlib'),
@@ -17,7 +19,8 @@ def parse():
     required.add_argument('--method', '-m', required=True, nargs='+', choices = methods.keys(), help='choose one or more from: ' +"'"+"', '".join(methods.keys()) +"'", metavar='METHOD')    
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--help', '-h', action='help', help='show this help message and exit')
-    optional.add_argument('--output', '-o', action='store_true', help='write output to proper file(s)')
+    optional.add_argument('--output', '-o', nargs = '?', const = '\n', help='write output')
+    optional.add_argument('--pairwise', '-pw', action='store_true', help='write output - pairwise')
     optional.add_argument('--quiet', '-q', action='store_true', help='do not show any results or messages, use this only if option -o/--output is set')
     try:
         pars = parser.parse_args()
@@ -64,6 +67,17 @@ def ncd_lzma(seqs_list):
             matrix[i][j] =  (float(len(lzma.compress(seqs_list[i]+seqs_list[j]))) - min(x,y))/max(x,y)
     return matrix
 
+def write_to_file(filename,result,ids_list, quiet='',pairwise=''):
+    if pairwise:
+        result= np.asmatrix('\n'.join('{} {} {}'.format(i+1,j+1,result[i,j]) for i, j in itertools.product(range(0,len(ids_list)),repeat=2)))
+        result = result.reshape(result.shape[1]/3,3)
+        filename = '{}_pw.mat'.format(filename)
+        np.savetxt(filename,result,fmt='%.f %.f\t%.10f', header= " ".join(ids_list)) 
+    else: 
+        filename = '{}.mat'.format(filename)
+        np.savetxt(filename,result,fmt='%.10f', header= " ".join(ids_list)) 
+    if os.path.exists(filename) and not quiet: print 'File',filename,'has been saved successfully' 
+
 def main():
     arguments = parse()
     sequences_list, ids_list = get_seqs_and_ids(arguments.file.name)
@@ -71,8 +85,10 @@ def main():
         result = eval(name +'(sequences_list)')
         if not arguments.quiet: print '\n' + methods[name] + '\n', result 
         if arguments.output:
-            np.savetxt(name+'.mat', result,fmt='%.10f', header= " ".join(ids_list))
-            if os.path.exists(name+'.mat') and not arguments.quiet: print 'File ' + name +'.mat has been saved successfully'
+            name_f = re.sub("[.][a-zA-Z]*","",arguments.file.name)
+            if arguments.output != '\n': name_f = arguments.output
+            filename  = '{}_{}'.format(name_f,name)
+            write_to_file(filename,result,ids_list,arguments.quiet,arguments.pairwise)
 
 if __name__ == '__main__':
     try:
