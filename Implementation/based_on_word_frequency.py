@@ -190,6 +190,9 @@ def kl(list_, seqs_number):
     for i, j in itertools.permutations(range(0,seqs_number),2):
         log2 = np.log2((list_[i,:]+1)/(list_[j,:]+1))
         matrix[i][j] = (np.sum(log2 * (list_[i,:]+1))).round(10) + 0.0
+    for i, j in itertools.combinations(range(0,seqs_number),2):
+        result = (matrix[i][j] + matrix[j][i])/2
+        matrix[i][j] = matrix[j][i] = result
     return matrix
 
 def angle_cos(i,j,list_):
@@ -209,7 +212,7 @@ def evol(list_, seqs_number):
 
 def write_to_file(filename,result,ids_list, quiet='',pairwise=''):
     if pairwise:
-        result= np.asmatrix('\n'.join('{} {} {}'.format(i+1,j+1,result[i,j]) for i, j in itertools.permutations(range(0,len(ids_list)),2)))
+        result= np.asmatrix('\n'.join('{} {} {}'.format(i+1,j+1,result[i,j]) for i, j in itertools.combinations(range(0,len(ids_list)),2)))
         result = result.reshape(result.shape[1]/3,3)
         filename = '{}_pw.mat'.format(filename)
         np.savetxt(filename,result,fmt='%.f %.f\t%.10f', header= " ".join(ids_list)) 
@@ -240,7 +243,7 @@ def main():
         elif nargs == 5: 
             result = eval('{}({},{},"{}",{},"{}")'.format(name,arguments.length,arguments.maximum_length,arguments.file.name,seqs_number,value[1]))
         else:
-            result = eval('{}({},{},"{}",{},""{}","{}")'.format(name,arguments.length,arguments.maximum_length,arguments.file.name,seqs_number,arguments.type,value[1]))
+            result = eval('{}({},{},"{}",{},"{}","{}")'.format(name,arguments.length,arguments.maximum_length,arguments.file.name,seqs_number,arguments.type,value[1]))
         if not arguments.quiet: 
             print '\n{}\n{}'.format(value[0],result)
         if arguments.output:

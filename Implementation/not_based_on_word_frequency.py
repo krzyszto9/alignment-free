@@ -5,10 +5,12 @@ import zlib
 import os.path
 import re
 import itertools
+import math
 from collections import OrderedDict
 
 methods = 	(('ncd_zlib','normalized compression distance using zlib'),
 		('ncd_lzma','normalized compression distance using lzma'),
+                ('usm','universal sequence maps'),
 		('all','use all above methods'))
 methods = OrderedDict(methods)
 
@@ -66,6 +68,44 @@ def ncd_lzma(seqs_list):
             (x,y) = (float(len(lzma.compress(seqs_list[i]))), float(len(lzma.compress(seqs_list[j]))))
             matrix[i][j] =  (float(len(lzma.compress(seqs_list[i]+seqs_list[j]))) - min(x,y))/max(x,y)
     return matrix
+
+def calc_usm_d(seqi_f,seqi_b,seqj_f,seqj_b):
+    matrix = np.zeros([len(seqi_f),len(seqj_f)])
+    limit = pow(10,-308)
+    for i in range(0,len(seqi_f)):
+        for j in range(0,len(seqj_f)):
+            dist_f = -np.log2(max(limit,max(abs(seqi_f[i,:]-seqj_f[j,:]))))
+            dist_b = -np.log2(max(limit,max(abs(seqi_b[i,:]-seqj_b[j,:]))))
+            matrix[i,j] = dist_f+dist_b
+    return matrix.mean()
+
+def usm(seqs_list):
+    d = {}
+    unique = list(set(''.join(seqs_list)))
+    unique.sort()
+    number_of_bits=int(math.ceil(np.log2(len(unique)))) 
+    for number, char in enumerate(unique): d[char] = number
+    mat=[]
+    for i,seq in enumerate(seqs_list):
+        list_b = [np.binary_repr(numb, width=number_of_bits) for numb in [d[char] for char in seqs_list[i]]]
+        matrix_usmc = np.zeros([len(seq)+2,number_of_bits*2])
+        #Forward Coordinates
+        matrix_usmc[0,:number_of_bits] = matrix_usmc[len(seq)+1,number_of_bits:]= np.random.rand(number_of_bits)
+        for j in range(1,len(seq)+1):
+            binary = np.array([int(x) for x in str(list_b[j-1])])
+            matrix_usmc[j,:number_of_bits] = matrix_usmc[j-1,:number_of_bits]+(0.5*(1-matrix_usmc[j-1,:number_of_bits]))*binary -(0.5*matrix_usmc[j-1,:number_of_bits])*(1-binary)
+        #Backward Coordinates
+        for j in reversed(range(1,len(seq)+1)):
+            binary = np.array([int(x) for x in str(list_b[j-1])])
+            matrix_usmc[j,number_of_bits:] = matrix_usmc[j+1,number_of_bits:]+(0.5*(1-matrix_usmc[j+1,number_of_bits:]))*binary - (0.5*matrix_usmc[j+1,number_of_bits:])*(1-binary)
+        matrix_usmc = matrix_usmc[1:-1,:]
+        mat.append(matrix_usmc)
+    mat= np.array(mat)
+    matrix = np.zeros([len(seqs_list), len(seqs_list)])
+    for i, j in itertools.combinations(range(0,len(seqs_list)),2):
+          matrix[i][j] = matrix[j][i] = calc_usm_d(mat[i][:,:number_of_bits],mat[i][:,number_of_bits:],mat[j][:,:number_of_bits],mat[j][:,number_of_bits:])
+    return matrix
+          
 
 def write_to_file(filename,result,ids_list, quiet='',pairwise=''):
     if pairwise:
