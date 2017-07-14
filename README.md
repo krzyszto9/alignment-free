@@ -5,3 +5,30 @@ Alignment-based methods for sequence comparison proved to be fundamental to clar
 More informations about alignment-free methods:</br>
 <a href="https://github.com/krzyszto9/alignment-free/blob/master/Vinga%2C%20Almeida%20-%202003%20-%20Alignment-free%20sequence%20comparison--a%20review.pdf">Vinga, S.; Almeida, J. (Mar 1, 2003) Alignment-free sequence comparison-a review.
 Bioinformatics 19 (4): 513–23</a>
+
+</br>
+
+Implemented distances/methods
+===================
+ltuple.py:
+  - eucliudean distance;
+  - squared eucliudean distance;
+  - standardized eucliudean distance;
+  - standardized eucliudean distance with different resolutions;
+  - weighted eucliudean distance;
+  - weighted eucliudean distance with different resolutions;
+  - minkowski distance;
+  - Pearson productmoment correlation coefficient;
+  - Kullback–Leibler divergence;
+  - cosine distance;
+  - evolutionary distance.
+  
+infotheory.py:
+  - Universal Sequence Maps;
+  - normalized compression distance.
+  
+</br>
+
+Help
+====
+The --help/-h shows a description of what each selected script does.
