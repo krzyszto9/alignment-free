@@ -22,11 +22,11 @@ Information theory-based measures (file infotheory.py):
   - Universal Sequence Maps;
   - normalized compression distance.
 
-
 More informations about alignment-free methods:</br>
 <a href="https://github.com/krzyszto9/alignment-free/blob/master/Vinga%2C%20Almeida%20-%202003%20-%20Alignment-free%20sequence%20comparison--a%20review.pdf">Vinga, S.; Almeida, J. (Mar 1, 2003) Alignment-free sequence comparison-a review.
 Bioinformatics 19 (4): 513–23</a>
 </br>
+
 Help
 ====
 The --help/-h shows a description of what each selected script does.
