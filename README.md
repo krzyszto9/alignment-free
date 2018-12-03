@@ -25,14 +25,14 @@ Information theory-based measures (file infotheory.py):
   - normalized compression distance.
 
 More informations about alignment-free methods:</br>
-<a href="https://github.com/krzyszto9/alignment-free/blob/master/Vinga%2C%20Almeida%20-%202003%20-%20Alignment-free%20sequence%20comparison--a%20review.pdf">Vinga, S.; Almeida, J. (Mar 1, 2003) Alignment-free sequence comparison-a review.
+<a href="https://github.com/krzyszto9/alignment-free/blob/master/Literature/Vinga%2C%20Almeida%20-%202003%20-%20Alignment-free%20sequence%20comparison--a%20review.pdf">Vinga, S.; Almeida, J. (Mar 1, 2003) Alignment-free sequence comparison-a review.
 Bioinformatics 19 (4): 513–23</a>
 </br>
 
 Full text
 ============
 Full text of my Bachelor thesis paper "Implementation of alignment-free sequence comparison methods" is available (in Polish) under this address:</br>
-<a href="https://github.com/krzyszto9/alignment-free/blob/master/BSc_aligment_free.pdf">Krzysztof Udycz, Implementation of alignment-free sequence comparison methods</a>
+<a href="https://github.com/krzyszto9/alignment-free/blob/master/Literature/BSc_aligment_free.pdf">Krzysztof Udycz, Implementation of alignment-free sequence comparison methods</a>
 </br>
 
 Help
